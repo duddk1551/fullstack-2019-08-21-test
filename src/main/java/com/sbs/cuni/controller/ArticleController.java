@@ -65,7 +65,8 @@ public class ArticleController {
 
 			return "common/redirect";
 		}
-
+		
+		articleService.upViewCount(id);
 		Article article = articleService.getOne(Maps.of("id", id));
 
 		model.addAttribute("article", article);

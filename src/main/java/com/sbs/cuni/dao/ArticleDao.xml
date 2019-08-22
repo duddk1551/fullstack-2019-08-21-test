@@ -142,12 +142,19 @@
 		DELETE FROM articleReply
 		WHERE id= #{id}
 	</delete>
+	
+	<update id="upViewCount">
+		UPDATE article
+		SET `hit` = article.`hit` + 1
+		WHERE id = #{id}
+	</update>
 
 	<resultMap id="Article" type="Article">
 		<id property="id" column="id" />
 		<id property="regDate" column="regDate" />
 		<id property="title" column="title" />
 		<id property="body" column="body" />
+		<id property="hit" column="hit" />
 		<id property="memberId" column="memberId" />
 		<id property="boardId" column="boardId" />
 		<id property="passwd" column="passwd" />

@@ -42,12 +42,14 @@
 			<col>
 			<col width="100">
 			<col width="100">
+			<col width="100">
 		</colgroup>
 		<thead>
 			<tr>
 				<th>ID</th>
 				<th>등록날짜</th>
 				<th>제목</th>
+				<th>조회수</th>
 				<th>댓글</th>
 				<th>비고</th>
 			</tr>
@@ -59,6 +61,7 @@
 					<td><c:out value="${article.regDate}" /></td>
 					<td><a href="detail?id=${article.id}&boardId=${param.boardId}"><c:out
 								value="${article.title}" /></a></td>
+					<td><c:out value="${article.hit}"/></td>
 					<td><c:out value="${article.extra.repliesCount}" /></td>
 					<td><c:if test="${loginedMemberId == article.memberId || (loginedMember != null && loginedMember.permissionLevel > 0)}">
 							<a onclick="return confirm('정말 삭제하시겠습니까?');" href="/article/doDelete?id=${article.id}&boardId=${param.boardId}">삭제</a>

@@ -194,9 +194,12 @@ public class ArticleServiceImpl implements ArticleService {
 		return Maps.of("resultCode", "F-2", "msg", "권한이 없습니다.");
 	}
 
-	@Override
 	public Board getBoard(long id) {
 		return articleDao.getBoard(id);
+	}
+
+	public void upViewCount(int id) {
+		articleDao.upViewCount(id);
 	}
 
 }
