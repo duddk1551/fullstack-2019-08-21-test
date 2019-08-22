@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.sbs.cuni.dto.Article;
 import com.sbs.cuni.dto.ArticleReply;
 import com.sbs.cuni.dto.Board;
+import com.sbs.cuni.dto.Member;
 import com.sbs.cuni.service.ArticleService;
+import com.sbs.cuni.service.MemberService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ArticleController {
 	@Autowired
 	private ArticleService articleService;
+	@Autowired
+	private MemberService memberService;
 
 	// 게시물 리스팅
 	@RequestMapping("article/list")
@@ -80,7 +84,18 @@ public class ArticleController {
 	}
 
 	@RequestMapping("/article/add")
-	public String showAdd(long boardId, Model model) {
+	public String showAdd(long boardId, Model model, HttpSession session) {
+		
+		Member member = memberService.getOne((long)session.getAttribute("loginedMemberId"));
+		long memberLevel = member.getPermissionLevel();
+		//boardId 가 1이면서 접속 멤버의 관리자 레벨이 0이면 접근 못함
+		if(boardId == 1 && memberLevel != 1) {
+			model.addAttribute("alertMsg", "접근 권한이 없습니다.");
+			model.addAttribute("historyBack", "true");
+			
+			return "common/redirect";
+		}
+		
 		Board board = articleService.getBoard(boardId);
 
 		model.addAttribute("board", board);
@@ -103,8 +118,18 @@ public class ArticleController {
 	}
 
 	@RequestMapping("/article/modify")
-	public String showModify(@RequestParam(value = "id", defaultValue = "0") int id, long boardId, Model model) {
-
+	public String showModify(@RequestParam(value = "id", defaultValue = "0") int id, long boardId, Model model, HttpSession session) {
+		
+		Article article = articleService.getOne(Maps.of("id", id));
+		
+		//게시물이 가지고있는 멤버아이디 != 지금 접속한 멤버 아이디
+		if(article.getMemberId() != (long)session.getAttribute("loginedMemberId")) {
+			model.addAttribute("alertMsg", "접근 권한이 없습니다.");
+			model.addAttribute("historyBack", "true");
+			
+			return "common/redirect";
+		}
+		
 		Board board = articleService.getBoard(boardId);
 
 		model.addAttribute("board", board);
@@ -115,8 +140,6 @@ public class ArticleController {
 
 			return "common/redirect";
 		}
-
-		Article article = articleService.getOne(Maps.of("id", id));
 
 		model.addAttribute("article", article);
 
@@ -157,6 +180,19 @@ public class ArticleController {
 	@RequestMapping("/article/doDelete")
 	public String doDelete(Model model, @RequestParam Map<String, Object> param, HttpSession session, long id, long boardId) {
 		param.put("id", id);
+		
+		Article article = articleService.getOne(Maps.of("id", id));
+		long memberId = article.getMemberId();
+		Member member = memberService.getOne((long)session.getAttribute("loginedMemberId"));
+		int memberLevel = member.getPermissionLevel();
+		
+		//게시물이 가지고있는 memberId 가 현재 접속한 멤버 아이디와 다를경우 또는 지금 멤버의 관리자 레벨이 1이 아닌경우
+		if(((long)session.getAttribute("loginedMemberId") != memberId) || ((long)session.getAttribute("loginedMemberId") != memberId && memberLevel != 1)) {
+			model.addAttribute("alertMsg", "접근 권한이 없습니다.");
+			model.addAttribute("historyBack", "true");
+			
+			return "common/redirect";
+		}
 
 		Map<String, Object> deleteRs = articleService.delete(param);
 
